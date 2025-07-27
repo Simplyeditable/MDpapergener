@@ -27,7 +27,7 @@
       font-weight: normal;
     }
     button {
-      margin-top: 1.5rem;
+      margin-top: 1rem;
       padding: 0.75rem;
       font-size: 1rem;
       background-color: #007acc;
@@ -44,8 +44,12 @@
       border-radius: 4px;
     }
     #copyBtn {
-      margin-top: 1rem;
       background-color: #28a745;
+    }
+    .inline-buttons {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
     }
   </style>
 </head>
@@ -54,9 +58,11 @@
   <p>GTA World LSPD Metropolitan paperwork generator</p>
 
   <label>Date of Patrol</label>
-  <select id="date">
-    <option value="">Select a date</option>
-  </select>
+  <input type="text" id="date" placeholder="DD/MMM/YYYY (e.g. 27/JUL/2025)" />
+  <div class="inline-buttons">
+    <button type="button" onclick="setToday()">Today (UTC+0)</button>
+    <button type="button" onclick="setYesterday()">Yesterday (UTC+0)</button>
+  </div>
 
   <label>Officers</label>
   <textarea id="officers" rows="4" placeholder="One officer per line\nPLATOON RANK Firstname Lastname"></textarea>
@@ -70,7 +76,7 @@
   </div>
 
   <label>Deployments</label>
-  <input type="text" id="deployments" placeholder="URL|Deployment type" />
+  <textarea id="deployments" rows="3" placeholder="One per line: URL|Deployment type"></textarea>
 
   <label>Additional Information</label>
   <textarea id="additional" rows="5"></textarea>
@@ -90,33 +96,33 @@
       return `${day}/${month}/${year}`;
     }
 
-    function populateDateOptions() {
-      const dateSelect = document.getElementById("date");
-      const today = getUTCDate();
-      const yesterday = getUTCDate(-1);
+    function setToday() {
+      document.getElementById("date").value = getUTCDate();
+    }
 
-      dateSelect.innerHTML += `<option value="${today}">${today} (Today)</option>`;
-      dateSelect.innerHTML += `<option value="${yesterday}">${yesterday} (Yesterday)</option>`;
+    function setYesterday() {
+      document.getElementById("date").value = getUTCDate(-1);
     }
 
     function generateBBCode() {
       const date = document.getElementById("date").value;
       const officers = document.getElementById("officers").value;
       const additional = document.getElementById("additional").value;
-      const deploymentInput = document.getElementById("deployments").value;
+      const deploymentsRaw = document.getElementById("deployments").value.trim().split("\n");
 
-      const patrolTypes = Array.from(document.querySelectorAll('.patrol-type:checked'))
-        .map(cb => `[cb] ${cb.value}`)
-        .join("\n");
+      const patrolTypes = Array.from(document.querySelectorAll('.patrol-type')).map(cb => {
+        const tag = cb.checked ? 'cbc' : 'cb';
+        return `[${tag}] ${cb.value}`;
+      }).join("\n");
 
-      let deploymentBB = "";
-      if (deploymentInput.includes("|")) {
-        const [url, label] = deploymentInput.split("|");
-        deploymentBB = `[url=${url}]${label}[/url]`;
-      }
+      const deploymentBB = deploymentsRaw.map(line => {
+        const [url, label] = line.split("|");
+        return url && label ? `[url=${url.trim()}]${label.trim()}[/url]` : '';
+      }).filter(Boolean).join("\n");
 
       const bbcode = `[divbox2=transparent][font=Arial][center]LOS SANTOS POLICE DEPARTMENT
-[size=120][b]METROPOLITAN DIVISION\nPATROL REPORT[/b][/size][/center]
+[size=120][b]METROPOLITAN DIVISION
+PATROL REPORT[/b][/size][/center]
 
 [b]1. Date of Patrol[/b] 
 ${date}
@@ -142,9 +148,6 @@ ${additional}`;
         .then(() => alert("BBCode copied to clipboard!"))
         .catch(err => alert("Failed to copy: " + err));
     }
-
-    // Initialize
-    populateDateOptions();
   </script>
 </body>
 </html>
