@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Metropolitan Division BBCode Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 2rem;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 1rem;
+    }
+    textarea, input, select {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.25rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .checkbox-group label {
+      display: block;
+      font-weight: normal;
+    }
+    button {
+      margin-top: 1.5rem;
+      padding: 0.75rem;
+      font-size: 1rem;
+      background-color: #007acc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #output {
+      white-space: pre-wrap;
+      background-color: #e8e8e8;
+      padding: 1rem;
+      margin-top: 2rem;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Metropolitan Division BBCode Generator</h1>
+
+  <label>Date of Patrol</label>
+  <input type="text" id="date" placeholder="DD/MMM/2025" />
+
+  <label>Officers</label>
+  <input type="text" id="officers" placeholder="PLATOON RANK Firstname Lastname" />
+
+  <label>Patrol Type</label>
+  <div class="checkbox-group">
+    <label><input type="checkbox" class="patrol-type" value="Canine Patrol" /> Canine Patrol</label>
+    <label><input type="checkbox" class="patrol-type" value="SWAT Crime Suppression Patrol" /> SWAT Crime Suppression Patrol</label>
+    <label><input type="checkbox" class="patrol-type" value="Joint Crime Suppression Patrol" /> Joint Crime Suppression Patrol</label>
+    <label><input type="checkbox" class="patrol-type" value="Gang Crime Suppression Patrol" /> Gang Crime Suppression Patrol</label>
+  </div>
+
+  <label>Deployments</label>
+  <input type="text" id="deployments" placeholder="URL|Deployment type" />
+
+  <label>Additional Information</label>
+  <textarea id="additional" rows="5"></textarea>
+
+  <button onclick="generateBBCode()">Generate BBCode</button>
+
+  <div id="output"></div>
+
+  <script>
+    function generateBBCode() {
+      const date = document.getElementById("date").value;
+      const officers = document.getElementById("officers").value;
+      const additional = document.getElementById("additional").value;
+      const deploymentInput = document.getElementById("deployments").value;
+
+      const patrolTypes = Array.from(document.querySelectorAll('.patrol-type:checked'))
+        .map(cb => `[cb] ${cb.value}`)
+        .join("\n");
+
+      let deploymentBB = "";
+      if (deploymentInput.includes("|")) {
+        const [url, label] = deploymentInput.split("|");
+        deploymentBB = `[url=${url}]${label}[/url]`;
+      }
+
+      const bbcode = `[divbox2=transparent][font=Arial][center]LOS SANTOS POLICE DEPARTMENT
+[size=120][b]METROPOLITAN DIVISION\nPATROL REPORT[/b][/size][/center]
+
+[b]1. Date of Patrol[/b] 
+${date}
+
+[b]2. Officers[/b]
+${officers}
+
+[b]3. Patrol Type[/b]
+${patrolTypes}
+
+[b]4. Deployments[/b]
+${deploymentBB}
+
+[b]5. Additional Information[/b]
+${additional}`;
+
+      document.getElementById("output").textContent = bbcode;
+    }
+  </script>
+</body>
+</html>
