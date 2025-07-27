@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Metropolitan Division BBCode Generator</title>
+  <title>MDpapergener | LSPD Metropolitan BBCode Generator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -43,10 +43,15 @@
       margin-top: 2rem;
       border-radius: 4px;
     }
+    #copyBtn {
+      margin-top: 1rem;
+      background-color: #28a745;
+    }
   </style>
 </head>
 <body>
-  <h1>Metropolitan Division BBCode Generator</h1>
+  <h1>MDpapergener</h1>
+  <p>GTA World LSPD Metropolitan paperwork generator</p>
 
   <label>Date of Patrol</label>
   <input type="text" id="date" placeholder="DD/MMM/2025" />
@@ -69,6 +74,7 @@
   <textarea id="additional" rows="5"></textarea>
 
   <button onclick="generateBBCode()">Generate BBCode</button>
+  <button id="copyBtn" onclick="copyToClipboard()">Copy to Clipboard</button>
 
   <div id="output"></div>
 
@@ -108,6 +114,13 @@ ${deploymentBB}
 ${additional}`;
 
       document.getElementById("output").textContent = bbcode;
+    }
+
+    function copyToClipboard() {
+      const output = document.getElementById("output").textContent;
+      navigator.clipboard.writeText(output)
+        .then(() => alert("BBCode copied to clipboard!"))
+        .catch(err => alert("Failed to copy: " + err));
     }
   </script>
 </body>
