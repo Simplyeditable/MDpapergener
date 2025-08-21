@@ -21,6 +21,7 @@
       margin-top: 0.25rem;
       border: 1px solid #ccc;
       border-radius: 4px;
+      box-sizing: border-box; /* Ensures padding doesn't affect width */
     }
     .checkbox-group label {
       display: block;
@@ -51,6 +52,34 @@
       gap: 0.5rem;
       margin-top: 0.5rem;
     }
+    
+    /* --- NEW STYLES FOR OFFICER LIST --- */
+    .officer-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+    }
+    .officer-row input {
+      flex-grow: 1; /* Input takes up available space */
+      margin-top: 0;
+    }
+    .officer-row .remove-btn, #add-officer-btn {
+      padding: 0.5rem;
+      font-size: 1rem;
+      line-height: 1;
+      margin-top: 0;
+      flex-shrink: 0; /* Prevent button from shrinking */
+    }
+    .remove-btn {
+      background-color: #dc3545; /* Red for remove */
+    }
+    #add-officer-btn {
+        background-color: #28a745; /* Green for add */
+        width: 100%; /* Make add button full width */
+    }
+    /* --- END OF NEW STYLES --- */
+
   </style>
 </head>
 <body>
@@ -65,8 +94,9 @@
   </div>
 
   <label>Officers</label>
-  <textarea id="officers" rows="4" placeholder="One officer per line\nPLATOON RANK Firstname Lastname"></textarea>
-
+  <div id="officer-list">
+    </div>
+  <button type="button" id="add-officer-btn" onclick="addOfficer()">+ Add Officer</button>
   <label>Patrol Type</label>
   <div class="checkbox-group">
     <label><input type="checkbox" class="patrol-type" value="Canine Patrol" /> Canine Patrol</label>
@@ -78,6 +108,9 @@
   <label>Deployments</label>
   <textarea id="deployments" rows="3" placeholder="One per line: URL|Deployment type"></textarea>
 
+  <label>Field Activity</label>
+  <textarea id="fieldActivity" rows="3" placeholder="One per line: URL|Activity type"></textarea>
+
   <label>Additional Information</label>
   <textarea id="additional" rows="5"></textarea>
 
@@ -87,6 +120,43 @@
   <div id="output"></div>
 
   <script>
+    const officerList = document.getElementById('officer-list');
+    const MAX_OFFICERS = 6;
+
+    // --- NEW FUNCTIONS FOR DYNAMIC OFFICER LIST ---
+    function addOfficer() {
+        const officerCount = officerList.getElementsByClassName('officer-row').length;
+        if (officerCount >= MAX_OFFICERS) {
+            alert('Maximum of 6 officers reached.');
+            return;
+        }
+
+        const officerRow = document.createElement('div');
+        officerRow.className = 'officer-row';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'PLATOON RANK Firstname Lastname';
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.textContent = '-';
+        removeBtn.className = 'remove-btn';
+        removeBtn.onclick = function() {
+            officerRow.remove();
+        };
+        
+        officerRow.appendChild(input);
+        officerRow.appendChild(removeBtn);
+        officerList.appendChild(officerRow);
+    }
+
+    // Add the first officer input when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        addOfficer();
+    });
+    // --- END OF NEW FUNCTIONS ---
+
     function getUTCDate(offsetDays = 0) {
       const date = new Date(new Date().toUTCString());
       date.setUTCDate(date.getUTCDate() + offsetDays);
@@ -106,9 +176,17 @@
 
     function generateBBCode() {
       const date = document.getElementById("date").value;
-      const officers = document.getElementById("officers").value;
       const additional = document.getElementById("additional").value;
       const deploymentsRaw = document.getElementById("deployments").value.trim().split("\n");
+      const fieldActivityRaw = document.getElementById("fieldActivity").value.trim().split("\n");
+      
+      // --- MODIFIED OFFICER VALUE GATHERING ---
+      const officerInputs = officerList.querySelectorAll('.officer-row input');
+      const officers = Array.from(officerInputs)
+          .map(input => input.value.trim())
+          .filter(value => value) // Remove any empty lines
+          .join('\n');
+      // --- END OF MODIFICATION ---
 
       const patrolTypes = Array.from(document.querySelectorAll('.patrol-type')).map(cb => {
         const tag = cb.checked ? 'cbc' : 'cb';
@@ -116,6 +194,11 @@
       }).join("\n");
 
       const deploymentBB = deploymentsRaw.map(line => {
+        const [url, label] = line.split("|");
+        return url && label ? `[url=${url.trim()}]${label.trim()}[/url]` : '';
+      }).filter(Boolean).join("\n");
+      
+      const fieldActivityBB = fieldActivityRaw.map(line => {
         const [url, label] = line.split("|");
         return url && label ? `[url=${url.trim()}]${label.trim()}[/url]` : '';
       }).filter(Boolean).join("\n");
@@ -136,7 +219,10 @@ ${patrolTypes}
 [b]4. Deployments[/b]
 ${deploymentBB}
 
-[b]5. Additional Information[/b]
+[b]5. Field Activity[/b]
+${fieldActivityBB}
+
+[b]6. Additional Information[/b]
 ${additional}`;
 
       document.getElementById("output").textContent = bbcode;
