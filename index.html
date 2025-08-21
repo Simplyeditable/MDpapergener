@@ -3,207 +3,396 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MDpapergener | LSPD Metropolitan BBCode Generator</title>
+  <title>LSPD Report Generator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
+      background-color: #f0f2f5;
+      color: #1c1e21;
       padding: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+    .container {
+        width: 100%;
+        max-width: 800px;
+        background-color: #ffffff;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    h1, h2 {
+        text-align: center;
+        color: #0056b3;
     }
     label {
       font-weight: bold;
       display: block;
-      margin-top: 1rem;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: #333;
     }
-    textarea, input, select {
+    textarea, input[type="text"], select {
       width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.25rem;
+      padding: 0.75rem;
       border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box; /* Ensures padding doesn't affect width */
+      border-radius: 6px;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
     }
-    .checkbox-group label {
-      display: block;
-      font-weight: normal;
+    textarea:focus, input[type="text"]:focus, select:focus {
+        border-color: #007acc;
+        outline: none;
     }
     button {
       margin-top: 1rem;
-      padding: 0.75rem;
+      padding: 0.75rem 1.5rem;
       font-size: 1rem;
+      font-weight: bold;
       background-color: #007acc;
       color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: 6px;
       cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+        background-color: #0056b3;
+    }
+    #output-container {
+      margin-top: 2rem;
     }
     #output {
       white-space: pre-wrap;
-      background-color: #e8e8e8;
+      background-color: #e9ecef;
       padding: 1rem;
-      margin-top: 2rem;
-      border-radius: 4px;
+      border-radius: 6px;
+      font-family: monospace;
+      max-height: 400px;
+      overflow-y: auto;
     }
     #copyBtn {
       background-color: #28a745;
+    }
+    #copyBtn:hover {
+      background-color: #218838;
+    }
+    .back-btn {
+        background-color: #6c757d;
+    }
+    .back-btn:hover {
+        background-color: #5a6268;
     }
     .inline-buttons {
       display: flex;
       gap: 0.5rem;
       margin-top: 0.5rem;
     }
-    
-    /* --- NEW STYLES FOR OFFICER LIST --- */
-    .officer-row {
+    .inline-buttons button {
+        flex-grow: 1;
+    }
+    .dynamic-list-row {
       display: flex;
       align-items: center;
       gap: 0.5rem;
       margin-top: 0.25rem;
     }
-    .officer-row input {
-      flex-grow: 1; /* Input takes up available space */
+    .dynamic-list-row input {
+      flex-grow: 1;
       margin-top: 0;
     }
-    .officer-row .remove-btn, #add-officer-btn {
+    .remove-btn, .add-btn {
       padding: 0.5rem;
       font-size: 1rem;
       line-height: 1;
       margin-top: 0;
-      flex-shrink: 0; /* Prevent button from shrinking */
+      flex-shrink: 0;
     }
     .remove-btn {
-      background-color: #dc3545; /* Red for remove */
+      background-color: #dc3545;
     }
-    #add-officer-btn {
-        background-color: #28a745; /* Green for add */
-        width: 100%; /* Make add button full width */
+    .remove-btn:hover {
+        background-color: #c82333;
     }
-    /* --- END OF NEW STYLES --- */
-
+    .add-btn {
+        background-color: #28a745;
+        width: 100%;
+    }
+    .add-btn:hover {
+        background-color: #218838;
+    }
+    .form-section, #selection-menu {
+        display: none; /* Hidden by default */
+    }
+    #selection-menu {
+        text-align: center;
+    }
+    #selection-menu button {
+        width: 100%;
+        margin-bottom: 1rem;
+        padding: 1rem;
+    }
   </style>
 </head>
 <body>
-  <h1>MDpapergener</h1>
-  <p>GTA World LSPD Metropolitan paperwork generator</p>
 
-  <label>Date of Patrol</label>
-  <input type="text" id="date" placeholder="DD/MMM/YYYY (e.g. 27/JUL/2025)" />
-  <div class="inline-buttons">
-    <button type="button" onclick="setToday()">Today (UTC+0)</button>
-    <button type="button" onclick="setYesterday()">Yesterday (UTC+0)</button>
-  </div>
-
-  <label>Officers</label>
-  <div id="officer-list">
+<div class="container">
+    <!-- SELECTION MENU -->
+    <div id="selection-menu">
+        <h1>LSPD Report Generator</h1>
+        <p>Please select the type of report you would like to generate.</p>
+        <button onclick="showForm('patrol-form')">Patrol Report</button>
+        <button onclick="showForm('deployment-form')">Deployment Report</button>
     </div>
-  <button type="button" id="add-officer-btn" onclick="addOfficer()">+ Add Officer</button>
-  <label>Patrol Type</label>
-  <div class="checkbox-group">
-    <label><input type="checkbox" class="patrol-type" value="Canine Patrol" /> Canine Patrol</label>
-    <label><input type="checkbox" class="patrol-type" value="SWAT Crime Suppression Patrol" /> SWAT Crime Suppression Patrol</label>
-    <label><input type="checkbox" class="patrol-type" value="Joint Crime Suppression Patrol" /> Joint Crime Suppression Patrol</label>
-    <label><input type="checkbox" class="patrol-type" value="Gang Crime Suppression Patrol" /> Gang Crime Suppression Patrol</label>
-  </div>
 
-  <label>Deployments</label>
-  <textarea id="deployments" rows="3" placeholder="One per line: URL|Deployment type"></textarea>
+    <!-- PATROL REPORT FORM -->
+    <div id="patrol-form" class="form-section">
+        <h2>GTA World LSPD Metropolitan Patrol Report</h2>
+        <button class="back-btn" onclick="showMenu()">Back to Menu</button>
+        
+        <label>Date of Patrol</label>
+        <input type="text" id="patrol-date" placeholder="DD/MMM/YYYY (e.g. 27/JUL/2025)" />
+        <div class="inline-buttons">
+            <button type="button" onclick="setUTCDate('patrol-date')">Today (UTC+0)</button>
+            <button type="button" onclick="setUTCDate('patrol-date', -1)">Yesterday (UTC+0)</button>
+        </div>
 
-  <label>Field Activity</label>
-  <textarea id="fieldActivity" rows="3" placeholder="One per line: URL|Activity type"></textarea>
+        <label>Officers</label>
+        <div id="patrol-officer-list" class="dynamic-list-container"></div>
+        <button type="button" class="add-btn" onclick="addDynamicInput('patrol-officer-list', 'PLATOON RANK Firstname Lastname', 6)">+ Add Officer</button>
 
-  <label>Additional Information</label>
-  <textarea id="additional" rows="5"></textarea>
+        <label>Patrol Type</label>
+        <div>
+            <label><input type="checkbox" class="patrol-type" value="Canine Patrol" /> Canine Patrol</label>
+            <label><input type="checkbox" class="patrol-type" value="SWAT Crime Suppression Patrol" /> SWAT Crime Suppression Patrol</label>
+            <label><input type="checkbox" class="patrol-type" value="Joint Crime Suppression Patrol" /> Joint Crime Suppression Patrol</label>
+            <label><input type="checkbox" class="patrol-type" value="Gang Crime Suppression Patrol" /> Gang Crime Suppression Patrol</label>
+        </div>
 
-  <button onclick="generateBBCode()">Generate BBCode</button>
-  <button id="copyBtn" onclick="copyToClipboard()">Copy to Clipboard</button>
+        <label>Deployments</label>
+        <textarea id="patrol-deployments" rows="3" placeholder="One per line: URL|Deployment type"></textarea>
 
-  <div id="output"></div>
+        <label>Field Activity</label>
+        <textarea id="patrol-fieldActivity" rows="3" placeholder="One per line: URL|Activity type"></textarea>
 
-  <script>
-    const officerList = document.getElementById('officer-list');
-    const MAX_OFFICERS = 6;
+        <label>Additional Information</label>
+        <textarea id="patrol-additional" rows="5"></textarea>
 
-    // --- NEW FUNCTIONS FOR DYNAMIC OFFICER LIST ---
-    function addOfficer() {
-        const officerCount = officerList.getElementsByClassName('officer-row').length;
-        if (officerCount >= MAX_OFFICERS) {
-            alert('Maximum of 6 officers reached.');
+        <button onclick="generatePatrolBBCode()">Generate BBCode</button>
+        <div id="patrol-output-container" class="output-container" style="display:none;">
+            <button id="copyBtn" onclick="copyToClipboard('patrol-output')">Copy to Clipboard</button>
+            <div id="patrol-output" class="output"></div>
+        </div>
+    </div>
+
+    <!-- DEPLOYMENT REPORT FORM -->
+    <div id="deployment-form" class="form-section">
+        <h2>LSPD Metropolitan Division Deployment Report</h2>
+        <button class="back-btn" onclick="showMenu()">Back to Menu</button>
+        
+        <h3>1. GENERAL INFORMATION</h3>
+        <label>1.1 Involved Platoons</label>
+        <div>
+            <label><input type="checkbox" class="dep=plat" value="Canine platoon" /> Canine platoon</label>
+            <label><input type="checkbox" class="dep=plat" value="D platoon" /> D platoon</label>
+            <label><input type="checkbox" class="dep=plat" value="H platoon" /> H platoon</label>
+        </div>
+        
+        <label>1.2 Incident Command</label>
+        <input type="text" id="depl-ic" placeholder="Incident Commander">
+        <input type="text" id="depl-cn" placeholder="Crisis Negotiator">
+        <label>Tactical Commander(s)</label>
+        <div id="depl-tc" class="dynamic-list-container"></div>
+        <button type="button" class="add-btn" onclick="addDynamicInput('depl-tc', 'Tactical Commander Name')">+ Add Tactical Commander</button>
+
+        <label>1.3 Involved Metropolitan Members</label>
+        <div id="depl-members" class="dynamic-list-container"></div>
+        <button type="button" class="add-btn" onclick="addDynamicInput('depl-members', 'RANK Firstname Lastname')">+ Add Member</button>
+
+        <label>1.4 Deployment Type</label>
+        <select id="depl-type">
+            <option value="Barricaded Suspect">Barricaded Suspect</option>
+            <option value="Hostage Rescue">Hostage Rescue</option>
+            <option value="Active Shooter">Active Shooter</option>
+            <option value="High-Risk Warrant">High-Risk Warrant</option>
+            <option value="Dignitary Protection">Dignitary Protection</option>
+            <option value="Riot Control">Riot Control</option>
+            <option value="Other">Other</option>
+        </select>
+        
+        <h3>2. DEPLOYMENT TIMELINE</h3>
+        <label>2.1 Date</label>
+        <input type="text" id="depl-date" placeholder="DD/MMM/YYYY" />
+        <div class="inline-buttons">
+            <button type="button" onclick="setUTCDate('depl-date')">Today (UTC+0)</button>
+            <button type="button" onclick="setUTCDate('depl-date', -1)">Yesterday (UTC+0)</button>
+        </div>
+        <label>2.2 Location</label>
+        <input type="text" id="depl-location" placeholder="e.g., San Andreas Avenue, Vespucci">
+        <label>2.3 Timeline</label>
+        <input type="text" id="depl-start-time" placeholder="Start of Deployment (24h format, e.g., 14:30)">
+      
+        <div class="inline-buttons">
+            <button type="button" onclick="setUTCTime('depl-start-time')">Now (UTC+0)</button>
+            <button type="button" onclick="setUTCTime('depl-start-time', -1)">One hour ago (UTC+0)</button>
+        </div>
+      
+        <input type="text" id="depl-end-time" placeholder="End of Deployment (24h format, e.g., 16:00)">
+      
+        <div class="inline-buttons">
+            <button type="button" onclick="setUTCTime('depl-end-time')">Now (UTC+0)</button>
+            <button type="button" onclick="setUTCTime('depl-end-time', -1)">One hour ago (UTC+0)</button>
+        </div>
+        
+        <h3>3. CASUALTY & INJURY INFORMATION</h3>
+        <label>3.1 Injured Team Members</label>
+        <div id="depl-injured" class="dynamic-list-container"></div>
+        <button type="button" class="add-btn" onclick="addDynamicInput('depl-injured', 'RANK Name - Injury Details')">+ Add Injured Member</button>
+        
+        <label>3.2 Suspect Casualties</label>
+        <div id="depl-suspects" class="dynamic-list-container"></div>
+        <button type="button" class="add-btn" onclick="addDynamicInput('depl-suspects', 'Details of suspect casualty')">+ Add Suspect Casualty</button>
+
+        <label>3.3 Civilian Casualties</label>
+        <div id="depl-civilians" class="dynamic-list-container"></div>
+        <button type="button" class="add-btn" onclick="addDynamicInput('depl-civilians', 'Details of civilian casualty')">+ Add Civilian Casualty</button>
+
+        <label>Filing Officer Signature</label>
+        <input type="text" id="depl-signature" placeholder="Firstname Lastname">
+
+        <button onclick="generateDeploymentBBCode()">Generate BBCode</button>
+        <div id="deployment-output-container" class="output-container" style="display:none;">
+            <button id="copyBtn" onclick="copyToClipboard('deployment-output')">Copy to Clipboard</button>
+            <div id="deployment-output" class="output"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- NAVIGATION ---
+    function showForm(formId) {
+        document.getElementById('selection-menu').style.display = 'none';
+        document.getElementById('patrol-form').style.display = 'none';
+        document.getElementById('deployment-form').style.display = 'none';
+        document.getElementById(formId).style.display = 'block';
+    }
+
+    function showMenu() {
+        document.getElementById('selection-menu').style.display = 'block';
+        document.getElementById('patrol-form').style.display = 'none';
+        document.getElementById('deployment-form').style.display = 'none';
+    }
+
+    // --- SHARED HELPER FUNCTIONS ---
+    function getUTCDate(offsetDays = 0) {
+        const date = new Date(new Date().toUTCString());
+        date.setUTCDate(date.getUTCDate() + offsetDays);
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        const month = date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }).toUpperCase();
+        const year = date.getUTCFullYear();
+        return `${day}/${month}/${year}`;
+    }
+
+    function setUTCDate(elementId, offset = 0) {
+        document.getElementById(elementId).value = getUTCDate(offset);
+    }
+
+  
+    // --- NEW TIME HELPER FUNCTIONS ---
+    function getUTCTime() {
+      const date = new Date();
+      const hours = String(date.getUTCHours()).padStart(2, '0');
+      const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    }
+
+    function setUTCTime(elementId) {
+      document.getElementById(elementId).value = getUTCTime();
+    }
+  
+    function copyToClipboard(elementId) {
+        const output = document.getElementById(elementId).textContent;
+        // Use execCommand for broader compatibility in sandboxed environments
+        const textarea = document.createElement('textarea');
+        textarea.value = output;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            alert('BBCode copied to clipboard!');
+        } catch (err) {
+            alert('Failed to copy: ' + err);
+        }
+        document.body.removeChild(textarea);
+    }
+
+    function addDynamicInput(containerId, placeholder, maxItems = 100) {
+        const container = document.getElementById(containerId);
+        if (container.children.length >= maxItems) {
+            alert(`Maximum of ${maxItems} items reached.`);
             return;
         }
-
-        const officerRow = document.createElement('div');
-        officerRow.className = 'officer-row';
-
+        const row = document.createElement('div');
+        row.className = 'dynamic-list-row';
         const input = document.createElement('input');
         input.type = 'text';
-        input.placeholder = 'PLATOON RANK Firstname Lastname';
-
+        input.placeholder = placeholder;
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
         removeBtn.textContent = '-';
         removeBtn.className = 'remove-btn';
-        removeBtn.onclick = function() {
-            officerRow.remove();
-        };
-        
-        officerRow.appendChild(input);
-        officerRow.appendChild(removeBtn);
-        officerList.appendChild(officerRow);
+        removeBtn.onclick = () => row.remove();
+        row.appendChild(input);
+        row.appendChild(removeBtn);
+        container.appendChild(row);
     }
 
-    // Add the first officer input when the page loads
+    function getDynamicListValues(containerId, prefix = '[*] ') {
+        const container = document.getElementById(containerId);
+        const inputs = container.querySelectorAll('.dynamic-list-row input');
+        return Array.from(inputs)
+            .map(input => input.value.trim())
+            .filter(value => value)
+            .map(value => `${prefix}${value}`)
+            .join('\n');
+    }
+
+    // --- PAGE LOAD INITIALIZATION ---
     document.addEventListener('DOMContentLoaded', () => {
-        addOfficer();
+        showMenu();
+        // Add one initial input for dynamic lists that should not be empty
+        addDynamicInput('patrol-officer-list', 'PLATOON RANK Firstname Lastname', 6);
+        addDynamicInput('dep-pla', 'Platoon Name');
+        addDynamicInput('depl-tc', 'Tactical Commander Name');
+        addDynamicInput('depl-members', 'RANK Firstname Lastname');
     });
-    // --- END OF NEW FUNCTIONS ---
 
-    function getUTCDate(offsetDays = 0) {
-      const date = new Date(new Date().toUTCString());
-      date.setUTCDate(date.getUTCDate() + offsetDays);
-      const day = String(date.getUTCDate()).padStart(2, '0');
-      const month = date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }).toUpperCase();
-      const year = date.getUTCFullYear();
-      return `${day}/${month}/${year}`;
-    }
+    // --- PATROL REPORT LOGIC ---
+    function generatePatrolBBCode() {
+        const date = document.getElementById("patrol-date").value;
+        const additional = document.getElementById("patrol-additional").value;
+        const deploymentsRaw = document.getElementById("patrol-deployments").value.trim().split("\n");
+        const fieldActivityRaw = document.getElementById("patrol-fieldActivity").value.trim().split("\n");
+        
+        const officers = getDynamicListValues('patrol-officer-list', '');
 
-    function setToday() {
-      document.getElementById("date").value = getUTCDate();
-    }
+        const patrolTypes = Array.from(document.querySelectorAll('.patrol-type:checked')).map(cb => {
+            return `[cbc] ${cb.value}`;
+        }).join("\n");
 
-    function setYesterday() {
-      document.getElementById("date").value = getUTCDate(-1);
-    }
+        const deploymentBB = deploymentsRaw.map(line => {
+            const [url, label] = line.split("|");
+            return url && label ? `[url=${url.trim()}]${label.trim()}[/url]` : '';
+        }).filter(Boolean).join("\n");
+        
+        const fieldActivityBB = fieldActivityRaw.map(line => {
+            const [url, label] = line.split("|");
+            return url && label ? `[url=${url.trim()}]${label.trim()}[/url]` : '';
+        }).filter(Boolean).join("\n");
 
-    function generateBBCode() {
-      const date = document.getElementById("date").value;
-      const additional = document.getElementById("additional").value;
-      const deploymentsRaw = document.getElementById("deployments").value.trim().split("\n");
-      const fieldActivityRaw = document.getElementById("fieldActivity").value.trim().split("\n");
-      
-      // --- MODIFIED OFFICER VALUE GATHERING ---
-      const officerInputs = officerList.querySelectorAll('.officer-row input');
-      const officers = Array.from(officerInputs)
-          .map(input => input.value.trim())
-          .filter(value => value) // Remove any empty lines
-          .join('\n');
-      // --- END OF MODIFICATION ---
-
-      const patrolTypes = Array.from(document.querySelectorAll('.patrol-type')).map(cb => {
-        const tag = cb.checked ? 'cbc' : 'cb';
-        return `[${tag}] ${cb.value}`;
-      }).join("\n");
-
-      const deploymentBB = deploymentsRaw.map(line => {
-        const [url, label] = line.split("|");
-        return url && label ? `[url=${url.trim()}]${label.trim()}[/url]` : '';
-      }).filter(Boolean).join("\n");
-      
-      const fieldActivityBB = fieldActivityRaw.map(line => {
-        const [url, label] = line.split("|");
-        return url && label ? `[url=${url.trim()}]${label.trim()}[/url]` : '';
-      }).filter(Boolean).join("\n");
-
-      const bbcode = `[divbox2=transparent][font=Arial][center]LOS SANTOS POLICE DEPARTMENT
+        const bbcode = `[divbox2=transparent][font=Arial][center]LOS SANTOS POLICE DEPARTMENT
 [size=120][b]METROPOLITAN DIVISION
 PATROL REPORT[/b][/size][/center]
 
@@ -225,15 +414,95 @@ ${fieldActivityBB}
 [b]6. Additional Information[/b]
 ${additional}`;
 
-      document.getElementById("output").textContent = bbcode;
+        document.getElementById("patrol-output").textContent = bbcode;
+        document.getElementById("patrol-output-container").style.display = 'block';
     }
 
-    function copyToClipboard() {
-      const output = document.getElementById("output").textContent;
-      navigator.clipboard.writeText(output)
-        .then(() => alert("BBCode copied to clipboard!"))
-        .catch(err => alert("Failed to copy: " + err));
+    // --- DEPLOYMENT REPORT LOGIC ---
+    function generateDeploymentBBCode() {
+        const platoons = getDynamicListValues('dep-plat');
+        const ic = document.getElementById('depl-ic').value;
+        const cn = document.getElementById('depl-cn').value;
+        const tc = getDynamicListValues('depl-tc');
+        const members = getDynamicListValues('depl-members');
+        const type = document.getElementById('depl-type').value;
+        const date = document.getElementById('depl-date').value;
+        const location = document.getElementById('depl-location').value;
+        const startTime = document.getElementById('depl-start-time').value;
+        const endTime = document.getElementById('depl-end-time').value;
+        const injured = getDynamicListValues('depl-injured');
+        const suspects = getDynamicListValues('depl-suspects');
+        const civilians = getDynamicListValues('depl-civilians');
+        const signature = document.getElementById('depl-signature').value;
+
+        const bbcode = `[divbox2=transparent]
+[aligntable=right,350,0,0,0,0,0][center][lspdlogo=150][/lspdlogo][metrologo=150][/metrologo][/center][/aligntable]
+
+
+[br][/br]
+[center][size=170][b]METROPOLITAN DIVISION[/b][/size]
+[size=150]DEPLOYMENT REPORT[/size][/center]
+[br]
+
+
+[divbox=black][b][size=150][color=#FFFFFF]1. GENERAL INFORMATION[/color][/size][/b]
+[/divbox]
+[indent=10][u]1.1[/u] [b]INVOLVED PLATOONS:[/b]
+[list]
+${platoons}
+[/list]
+
+[u]1.2[/u] [b]INCIDENT COMMAND:[/b]
+[list][*] [b]INCIDENT COMMANDER (if applicable):[/b] ${ic}
+[*] [b]CRISIS NEGOTIATOR (if applicable):[/b] ${cn}
+[*] [b]TACTICAL COMMANDER:[/b]
+[list]${tc}[/list][/list]
+
+[u]1.3[/u] [b]INVOLVED METROPOLITAN MEMBERS: [/b]
+[list]
+${members}
+[/list]
+
+[u]1.4[/u] [b]DEPLOYMENT TYPE:[/b] ${type}
+[/indent]
+[divbox=black][b][size=150][color=#FFFFFF]2. DEPLOYMENT TIMELINE[/color][/size][/b]
+[/divbox]
+[indent=10][u]2.1[/u] [b]DATE:[/b] ${date}
+[u]2.2[/u] [b]LOCATION:[/b] ${location}
+[u]2.3[/u] [b]TIMELINE:[/b]
+[list][*][b]START OF DEPLOYMENT:[/b] ${startTime}
+[list][/list]
+[*][b]END OF DEPLOYMENT:[/b] ${endTime}[/list][/indent]
+[divbox=black][b][size=150][color=#FFFFFF]3. CASUALTY & INJURY INFORMATION[/color][/size][/b][/divbox]
+[indent=10][u]3.1[/u] [b]INJURED TEAM MEMBERS:[/b]
+[list]
+${injured}
+[/list]
+
+[u]3.2[/u] [b]SUSPECT CASUALTIES:[/b]
+[list]
+${suspects}
+[/list]
+
+[u]3.3[/u] [b]CIVILIAN CASUALTIES:[/b]
+[list]
+${civilians}
+[/list]
+
+[br][/br]
+[divbox=black][/divbox]
+[br][/br]
+[aligntable=left,200,0,0,0,0,0][center][b]FILING OFFICER SIGNATURE[/b]
+[i]${signature}[/i][/center]
+[/aligntable][aligntable=left,721,0,0,0,0,0]
+[/aligntable]
+[br][/br]
+[br][/br]
+[/divbox2]`;
+
+        document.getElementById("deployment-output").textContent = bbcode;
+        document.getElementById("deployment-output-container").style.display = 'block';
     }
-  </script>
+</script>
 </body>
 </html>
