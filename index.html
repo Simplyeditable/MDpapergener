@@ -601,14 +601,32 @@
 			if (checkedTypes.includes(type)) {
 				return `[cbc] ${type}`;
 			} else {
-				return `[ubc] ${type}`;
+				return `[cb] ${type}`;
 			}
 		}).join("\n");
         const deploymentsRaw = (report.deploymentsRaw || "").split("\n");
         const fieldActivityRaw = (report.fieldActivityRaw || "").split("\n");
         const deploymentBB = deploymentsRaw.map(line => { const [url, label] = line.split("|"); return url && label ? `[url=${url.trim()}]${label.trim()}[/url]` : ''; }).filter(Boolean).join("\n") || "N/A";
         const fieldActivityBB = fieldActivityRaw.map(line => { const [url, label] = line.split("|"); return url && label ? `[url=${url.trim()}]${label.trim()}[/url]` : ''; }).filter(Boolean).join("\n") || "N/A";
-        return `[divbox2=transparent][font=Arial][center]LOS SANTOS POLICE DEPARTMENT\n[size=120][b]METROPOLITAN DIVISION\nPATROL REPORT[/b][/size][/center]\n[b]1. Date of Patrol[/b] \n${report.date || 'N/A'}\n[b]2. Officers[/b]\n[list]\n${officers}\n[/list]\n[b]3. Patrol Type[/b]\n${patrolTypes}\n[b]4. Deployments[/b]\n${deploymentBB}\n[b]5. Field Activity[/b]\n${fieldActivityBB}\n[b]6. Additional Information[/b]\n${report.additional || 'N/A'}[/font][/divbox2]`;
+        return `[divbox2=transparent][font=Arial][center]LOS SANTOS POLICE DEPARTMENT
+[size=120][b]METROPOLITAN DIVISION
+PATROL REPORT[/b][/size][/center]
+
+[b]1. Date of Patrol[/b]
+${report.date || 'N/A'}
+
+[b]2. Officers[/b]
+[list]
+${officers}
+[/list]
+[b]3. Patrol Type[/b]
+${patrolTypes}
+
+[b]4. Deployments[/b]
+${deploymentBB}
+
+[b]5. Additional Information[/b]
+${report.additional || 'N/A'}[/font][/divbox2]`;
     }
 
     function buildDeploymentBBCode(report) {
