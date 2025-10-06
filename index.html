@@ -302,8 +302,8 @@
             <label><input type="checkbox" name="dep-plat" value="Canine Platoon" /> Canine Platoon</label>
             <label><input type="checkbox" name="dep-plat" value="D Platoon" /> D Platoon</label>
             <label><input type="checkbox" name="dep-plat" value="H Platoon" /> H Platoon</label>
-			<label><input type="checkbox" name="dep-plat" value="UDU squad" /> UDU squad</label>
-			<label><input type="checkbox" name="dep-plat" value="Bomb squad" /> Bomb squad</label>
+            <label><input type="checkbox" name="dep-plat" value="UDU squad" /> UDU squad</label>
+            <label><input type="checkbox" name="dep-plat" value="Bomb squad" /> Bomb squad</label>
         </div>
         <label>1.2 Incident Command</label>
         <label for="depl-ic" style="margin-top:0.5rem;">Incident Commander</label>
@@ -328,11 +328,9 @@
         <div class="inline-buttons"><button type="button" onclick="setUTCTime('depl-start-time')">Now (UTC+0)</button><button type="button" onclick="setUTCTime('depl-start-time', -1)">One hour ago (UTC+0)</button></div>
         <input style="margin-top: 0.5rem;" type="text" id="depl-end-time" placeholder="End of Deployment (24h format, e.g., 16:00)">
         <div class="inline-buttons"><button type="button" onclick="setUTCTime('depl-end-time')">Now (UTC+0)</button></div>
-        
         <label>Timeline of Events</label>
         <div id="depl-timeline-events" class="dynamic-list-container"></div>
         <button type="button" class="add-btn" onclick="addDynamicInput('depl-timeline-events', 'Event description')">+ Add Timeline Event</button>
-
         <h3>3. CASUALTY & INJURY INFORMATION</h3>
         <label>3.1 Injured Team Members</label>
         <div id="depl-injured" class="dynamic-list-container"></div>
@@ -865,14 +863,17 @@ ${civilians}
                             if (end > start) totalDeploymentMinutes += (end - start) / (1000 * 60);
                         }
                     }
-                    const filingOfficerFullName = getFullName(report.filingOfficer).toLowerCase();
+                    
+                    // Corrected Partnership Logic
                     participants.forEach(p => {
                         const originalPartnerFullName = getFullName(p);
                         const partnerFullNameLower = originalPartnerFullName.toLowerCase();
-                        if (partnerFullNameLower !== filingOfficerFullName && !exclusionNames.includes(partnerFullNameLower)) {
-                            partnerCounts[originalPartnerFullName] = (partnerCounts[originalPartnerFullName] || 0) + 1;
+                    
+						if (!exclusionNames.includes(partnerFullNameLower)) {
+							partnerCounts[originalPartnerFullName] = (partnerCounts[originalPartnerFullName] || 0) + 1;
                         }
                     });
+                    
                 } catch (e) {
                     console.error("Failed to process a report, skipping. Report data:", report, "Error:", e);
                 }
