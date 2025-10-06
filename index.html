@@ -589,7 +589,7 @@
 
     // --- BBCODE BUILDERS ---
     function buildPatrolBBCode(report) {
-        const officers = (report.officers || []).map(o => `[*] ${o}`).join('\n');
+        const officers = (report.officers || []).map(o => ` ${o}`).join('\n');
         const allPatrolTypes = [
 			"Canine Patrol",
 			"SWAT Crime Suppression Patrol",
