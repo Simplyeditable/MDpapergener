@@ -882,7 +882,7 @@ ${civilians}
             const sortedPartners = Object.entries(partnerCounts).sort(([, a], [, b]) => b - a);
             const sortedDeploymentTypes = Object.entries(deploymentTypeCounts).sort(([, a], [, b]) => b - a);
 
-            finalOutputHTML += `<hr><h3>Summary for ${monthName} ${year}</h3>`;
+            finalOutputHTML += `<h3>Summary for ${monthName} ${year}</h3>`;
             finalOutputHTML += `<ul><li><strong>Total Patrols Logged:</strong> ${patrolCount}</li><li><strong>Total Deployments Logged:</strong> ${deploymentCount}</li><li><strong>Total Deployment Duration:</strong> ${(totalDeploymentMinutes / 60).toFixed(1)} hours</li></ul>`;
             if (sortedDeploymentTypes.length > 0) {
                 finalOutputHTML += `<h4>Deployment Types Breakdown:</h4><ol>`;
