@@ -370,8 +370,8 @@
     <div id="summary-form" class="form-section">
         <h2>Monthly Summary</h2>
         <button class="back-btn" onclick="showMenu()">Back to Menu</button>
-        <label for="summary-name-exclusion">Name(s) to Exclude from Summary (comma separated)</label>
-        <input type="text" id="summary-name-exclusion" placeholder="e.g., John Doe, Jane Smith">
+        <label for="summary-name-exclusion">Partnering stats</label>
+        <input type="text" id="summary-name-exclusion" placeholder="e.g., Javier Ramos">
         <button onclick="generateSummary()">Calculate Summary</button>
         <div id="summary-output-container" class="output-container" style="display:none;">
             <div id="summary-output" class="output"></div>
@@ -882,7 +882,7 @@ ${civilians}
             const sortedPartners = Object.entries(partnerCounts).sort(([, a], [, b]) => b - a);
             const sortedDeploymentTypes = Object.entries(deploymentTypeCounts).sort(([, a], [, b]) => b - a);
 
-            finalOutputHTML += `<h3>Summary for ${monthName} ${year}</h3>`;
+            finalOutputHTML += `<h3> Summary for ${monthName} ${year}</h3>`;
             finalOutputHTML += `<ul><li><strong>Total Patrols Logged:</strong> ${patrolCount}</li><li><strong>Total Deployments Logged:</strong> ${deploymentCount}</li><li><strong>Total Deployment Duration:</strong> ${(totalDeploymentMinutes / 60).toFixed(1)} hours</li></ul>`;
             if (sortedDeploymentTypes.length > 0) {
                 finalOutputHTML += `<h4>Deployment Types Breakdown:</h4><ol>`;
