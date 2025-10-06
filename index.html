@@ -590,7 +590,20 @@
     // --- BBCODE BUILDERS ---
     function buildPatrolBBCode(report) {
         const officers = (report.officers || []).map(o => `[*] ${o}`).join('\n');
-        const patrolTypes = (report.patrolTypes || []).map(pt => `[cbc] ${pt}`).join("\n") || "N/A";
+        const allPatrolTypes = [
+			"Canine Patrol",
+			"SWAT Crime Suppression Patrol",
+			"Joint Crime Suppression Patrol",
+			"Gang Crime Suppression Patrol"
+		];
+		const checkedTypes = report.patrolTypes || [];
+		const patrolTypes = allPatrolTypes.map(type => {
+			if (checkedTypes.includes(type)) {
+				return `[cbc] ${type}`;
+			} else {
+				return `[ubc] ${type}`;
+			}
+		}).join("\n");
         const deploymentsRaw = (report.deploymentsRaw || "").split("\n");
         const fieldActivityRaw = (report.fieldActivityRaw || "").split("\n");
         const deploymentBB = deploymentsRaw.map(line => { const [url, label] = line.split("|"); return url && label ? `[url=${url.trim()}]${label.trim()}[/url]` : ''; }).filter(Boolean).join("\n") || "N/A";
