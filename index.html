@@ -55,7 +55,7 @@
       margin-bottom: 0.5rem;
       color: var(--text-color);
     }
-    textarea, input[type="text"], select {
+    textarea, input[type="text"], input[type="number"], select {
       width: 100%;
       padding: 0.75rem;
       border: 1px solid var(--input-border);
@@ -65,7 +65,7 @@
       background-color: var(--input-bg);
       color: var(--text-color);
     }
-    textarea:focus, input[type="text"]:focus, select:focus {
+    textarea:focus, input[type="text"]:focus, input[type="number"]:focus, select:focus {
         border-color: var(--input-focus-border);
         outline: none;
     }
@@ -183,15 +183,36 @@
     #selection-menu {
         text-align: center;
     }
+    .menu-section {
+        background-color: var(--bg-color);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .menu-section-header {
+        color: var(--text-color);
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+        border-bottom: none;
+        padding-bottom: 0;
+    }
     #selection-menu button {
         width: 100%;
         margin-bottom: 1rem;
         padding: 1rem;
+        margin-top: 0;
+    }
+    #selection-menu button:last-child {
+        margin-bottom: 0;
     }
     #summary-output, #all-reports-container {
         font-family: Arial, sans-serif;
         background-color: var(--container-bg);
         border: none;
+        white-space: normal;
     }
     .report-entry {
         background-color: var(--bg-color);
@@ -250,12 +271,24 @@
 <div class="container">
     <div id="selection-menu">
         <h1>LSPD Report Generator</h1>
-        <p>Please select an option.</p>
-        <button onclick="showForm('patrol-form')">Patrol Report</button>
-        <button onclick="showForm('deployment-form')">Deployment Report</button>
-        <button onclick="showForm('quick-parser-form')" style="background-color: #fd7e14;">Quick Report Parser</button>
-        <button onclick="showForm('summary-form')" style="background-color: #17a2b8;">Monthly Summary</button>
-        <button onclick="showForm('view-reports-form')" style="background-color: #6c757d;">View All Reports</button>
+        
+        <div class="menu-section">
+            <h2 class="menu-section-header">Metropolitan Division</h2>
+            <button onclick="showForm('patrol-form')">Patrol Report</button>
+            <button onclick="showForm('deployment-form')">Deployment Report</button>
+        </div>
+
+        <div class="menu-section">
+            <h2 class="menu-section-header">ASD</h2>
+            <button onclick="showForm('flight-log-form')" style="background-color: #6f42c1;">Flight Log</button>
+        </div>
+        
+        <div class="menu-section">
+            <h2 class="menu-section-header">Tools & Summaries</h2>
+            <button onclick="showForm('quick-parser-form')" style="background-color: #fd7e14;">Quick Report Parser</button>
+            <button onclick="showForm('summary-form')" style="background-color: #17a2b8;">Monthly Summary</button>
+            <button onclick="showForm('view-reports-form')" style="background-color: #6c757d;">View All Reports</button>
+        </div>
     </div>
 
     <div id="patrol-form" class="form-section">
@@ -302,8 +335,8 @@
             <label><input type="checkbox" name="dep-plat" value="Canine Platoon" /> Canine Platoon</label>
             <label><input type="checkbox" name="dep-plat" value="D Platoon" /> D Platoon</label>
             <label><input type="checkbox" name="dep-plat" value="H Platoon" /> H Platoon</label>
-			<label><input type="checkbox" name="dep-plat" value="UDU squad" /> UDU squad</label>
-			<label><input type="checkbox" name="dep-plat" value="Bomb squad" /> Bomb squad</label>
+            <label><input type="checkbox" name="dep-plat" value="UDU squad" /> UDU squad</label>
+            <label><input type="checkbox" name="dep-plat" value="Bomb squad" /> Bomb squad</label>
         </div>
         <label>1.2 Incident Command</label>
         <label for="depl-ic" style="margin-top:0.5rem;">Incident Commander</label>
@@ -326,6 +359,8 @@
         <label>2.3 Timeline</label>
         <input type="text" id="depl-start-time" placeholder="Start of Deployment (24h format, e.g., 14:30)">
         <div class="inline-buttons"><button type="button" onclick="setUTCTime('depl-start-time')">Now (UTC+0)</button><button type="button" onclick="setUTCTime('depl-start-time', -1)">One hour ago (UTC+0)</button></div>
+        <label for="depl-timeline-details" style="margin-top:0.5rem;">Timeline Details</label>
+        <textarea id="depl-timeline-details" rows="4" placeholder="Add each timeline event on a new line."></textarea>
         <input style="margin-top: 0.5rem;" type="text" id="depl-end-time" placeholder="End of Deployment (24h format, e.g., 16:00)">
         <div class="inline-buttons"><button type="button" onclick="setUTCTime('depl-end-time')">Now (UTC+0)</button></div>
         <h3>3. CASUALTY & INJURY INFORMATION</h3>
@@ -348,6 +383,36 @@
                 <a href="https://lspd.gta.world/viewforum.php?f=2146" target="_blank" class="button-link field-records-btn">Field Records</a>
             </div>
             <div id="deployment-output" class="output"></div>
+        </div>
+    </div>
+
+    <div id="flight-log-form" class="form-section">
+        <h2>Flight Log Entry</h2>
+        <button class="back-btn" onclick="showMenu()">Back to Menu</button>
+        <h3>Flight Details</h3>
+        <label for="flight-date">Date</label>
+        <input type="text" id="flight-date" placeholder="DD/MMM/YYYY" />
+        <div class="inline-buttons"><button type="button" onclick="setUTCDate('flight-date')">Today (UTC+0)</button><button type="button" onclick="setUTCDate('flight-date', -1)">Yesterday (UTC+0)</button></div>
+        <label for="flight-hours">Total Flight Hours (Optional)</label>
+        <input type="number" id="flight-hours" placeholder="e.g., 1.5" step="0.1" />
+        <h3>Flight Activities (Points)</h3>
+        <div>
+            <label><input type="checkbox" name="flight-activity" value="Pursuit Deployment" data-points="2"> Pursuit Deployment (2 pts)</label>
+            <label><input type="checkbox" name="flight-activity" value="Other Deployment" data-points="2"> Other Deployment (2 pts)</label>
+            <label><input type="checkbox" name="flight-activity" value="30+ Minute Patrol" data-points="3"> 30+ Minute Patrol (3 pts)</label>
+            <label><input type="checkbox" name="flight-activity" value="60+ Minute Patrol" data-points="4"> 60+ Minute Patrol (4 pts)</label>
+            <label><input type="checkbox" name="flight-activity" value="90+ Minute Patrol" data-points="5"> 90+ Minute Patrol (5 pts)</label>
+            <label><input type="checkbox" name="flight-activity" value="Event Deployment" data-points="2"> Event Deployment (2 pts)</label>
+            <label><input type="checkbox" name="flight-activity" value="SFS Deployment" data-points="5"> SFS Deployment (5 pts)</label>
+            <label><input type="checkbox" name="flight-activity" value="Partnered Flight" data-points="2"> Partnered Flight (2 pts)</label>
+            <label><input type="checkbox" name="flight-activity" value="Training Flight (Instructor)" data-points="6"> Training Flight (Instructor) (6 pts)</label>
+        </div>
+        <button onclick="generateFlightLogBBCode(this)">Generate & Save Log</button>
+        <div id="flight-log-output-container" class="output-container" style="display:none;">
+            <div class="output-buttons">
+                <button class="copy-btn" onclick="copyToClipboard('flight-log-output', this)">Copy to Clipboard</button>
+            </div>
+            <div id="flight-log-output" class="output"></div>
         </div>
     </div>
 
@@ -393,6 +458,7 @@
     const patrolFormKey = 'patrolFormData';
     const deploymentFormKey = 'deploymentFormData';
     const summaryExclusionKey = 'summaryExclusion';
+
     const deploymentTypes = [
         "Search Warrant Execution", "High Risk Arrest Warrant Execution", "High Risk Crime Suppression Patrol",
         "Property Search", "Vehicle Search", "Area Search", "Property Alarm", "Civil Disturbance Deployment",
@@ -402,6 +468,19 @@
         "Covert Operation", "Bomb Threat", "Suspicious Package", "Bomb Disposal", "Explosive Device Investigation",
         "Explosive Ordnance Disposal", "IED Incident", "Explosive Materials Incident", "Detonation of Explosives",
         "Explosive Device Safety Assessment"
+    ];
+    const flightActivities = [
+        { name: "Pursuit Deployment", points: 2 }, { name: "Other Deployment", points: 2 },
+        { name: "30+ Minute Patrol", points: 3 }, { name: "60+ Minute Patrol", points: 4 },
+        { name: "90+ Minute Patrol", points: 5 }, { name: "Event Deployment", points: 2 },
+        { name: "SFS Deployment", points: 5 }, { name: "Partnered Flight", points: 2 },
+        { name: "Training Flight (Instructor)", points: 6 }
+    ];
+    const patrolTypesList = [
+        "Canine Patrol", "SWAT Crime Suppression Patrol", "Joint Crime Suppression Patrol", "Gang Crime Suppression Patrol"
+    ];
+    const platoonsList = [
+        "Canine Platoon", "D Platoon", "H Platoon", "UDU squad", "Bomb squad"
     ];
 
     // --- NAVIGATION ---
@@ -590,7 +669,10 @@
     // --- BBCODE BUILDERS ---
     function buildPatrolBBCode(report) {
         const officers = (report.officers || []).map(o => `[*] ${o}`).join('\n');
-        const patrolTypes = (report.patrolTypes || []).map(pt => `[cbc] ${pt}`).join("\n") || "N/A";
+        const patrolTypes = patrolTypesList.map(pt => {
+            const isChecked = (report.patrolTypes || []).includes(pt);
+            return `${isChecked ? '[cbc]' : '[cb]'} ${pt}`;
+        }).join('\n');
         const deploymentsRaw = (report.deploymentsRaw || "").split("\n");
         const fieldActivityRaw = (report.fieldActivityRaw || "").split("\n");
         const deploymentBB = deploymentsRaw.map(line => { const [url, label] = line.split("|"); return url && label ? `[url=${url.trim()}]${label.trim()}[/url]` : ''; }).filter(Boolean).join("\n") || "N/A";
@@ -599,12 +681,34 @@
     }
 
     function buildDeploymentBBCode(report) {
-        const platoons = (report.platoons || []).map(p => `[*] ${p}`).join('\n') || "[*] N/A";
+        const platoons = platoonsList.map(p => {
+            const isChecked = (report.platoons || []).includes(p);
+            return `${isChecked ? '[cbc]' : '[cb]'} ${p}`;
+        }).join('\n');
         const members = (report.members || []).map(m => `[*] ${m}`).join('\n');
         const injured = (report.injured || []).map(i => `[*] ${i}`).join('\n') || "[*] N/A";
         const suspects = (report.suspects || []).map(s => `[*] ${s}`).join('\n') || "[*] N/A";
         const civilians = (report.civilians || []).map(c => `[*] ${c}`).join('\n') || "[*] N/A";
-        return `[divbox2=transparent]\n[aligntable=right,350,0,0,0,0,0][center][lspdlogo=150][/lspdlogo][metrologo=150][/metrologo][/center][/aligntable]\n[br][/br]\n[center][size=170][b]METROPOLITAN DIVISION[/b][/size]\n[size=150]DEPLOYMENT REPORT[/size][/center]\n[br]\n[divbox=black][b][size=150][color=#FFFFFF]1. GENERAL INFORMATION[/color][/size][/b][/divbox]\n[indent=10][u]1.1[/u] [b]INVOLVED PLATOONS:[/b]\n[list]${platoons}[/list]\n[u]1.2[/u] [b]INCIDENT COMMAND:[/b]\n[list][*] [b]INCIDENT COMMANDER (if applicable):[/b] ${report.ic || 'N/A'}\n[*] [b]CRISIS NEGOTIATOR (if applicable):[/b] ${report.cn || 'N/A'}\n[*] [b]TACTICAL COMMANDER:[/b] ${report.tc || 'N/A'}\n[/list]\n[u]1.3[/u] [b]INVOLVED METROPOLITAN MEMBERS: [/b]\n[list]${members}[/list]\n[u]1.4[/u] [b]DEPLOYMENT TYPE:[/b] ${report.deploymentType}\n[/indent]\n[divbox=black][b][size=150][color=#FFFFFF]2. DEPLOYMENT TIMELINE[/color][/size][/b][/divbox]\n[indent=10][u]2.1[/u] [b]DATE:[/b] ${report.date || 'N/A'}\n[u]2.2[/u] [b]LOCATION:[/b] ${report.location || 'N/A'}\n[u]2.3[/u] [b]TIMELINE:[/b]\n[list][*][b]START OF DEPLOYMENT:[/b] ${report.startTime || 'N/A'}\n[*][b]END OF DEPLOYMENT:[/b] ${report.endTime || 'N/A'}[/list][/indent]\n[divbox=black][b][size=150][color=#FFFFFF]3. CASUALTY & INJURY INFORMATION[/color][/size][/b][/divbox]\n[indent=10][u]3.1[/u] [b]INJURED TEAM MEMBERS:[/b]\n[list]${injured}[/list]\n[u]3.2[/u] [b]SUSPECT CASUALTIES:[/b]\n[list]${suspects}[/list]\n[u]3.3[/u] [b]CIVILIAN CASUALTIES:[/b]\n[list]${civilians}[/list]\n[br][/br]\n[divbox=black][/divbox]\n[br][/br]\n[aligntable=left,200,0,0,0,0,0][center][b]FILING OFFICER SIGNATURE[/b]\n[i]${report.signature || ' '}[/i][/center][/aligntable]\n[br][/br][br][/br][/divbox2]`;
+        const timelineDetailsFormatted = (report.timelineDetails || '')
+            .split('\n')
+            .filter(Boolean)
+            .map(line => `[*]${line.trim()}`)
+            .join('\n');
+        const timelineBlock = timelineDetailsFormatted 
+            ? `\n[list]\n${timelineDetailsFormatted}\n[/list]` 
+            : '';
+
+        return `[divbox2=transparent]\n[aligntable=right,350,0,0,0,0,0][center][lspdlogo=150][/lspdlogo][metrologo=150][/metrologo][/center][/aligntable]\n[br][/br]\n[center][size=170][b]METROPOLITAN DIVISION[/b][/size]\n[size=150]DEPLOYMENT REPORT[/size][/center]\n[br]\n[divbox=black][b][size=150][color=#FFFFFF]1. GENERAL INFORMATION[/color][/size][/b][/divbox]\n[indent=10][u]1.1[/u] [b]INVOLVED PLATOONS:[/b]\n${platoons}\n[u]1.2[/u] [b]INCIDENT COMMAND:[/b]\n[list][*] [b]INCIDENT COMMANDER (if applicable):[/b] ${report.ic || 'N/A'}\n[*] [b]CRISIS NEGOTIATOR (if applicable):[/b] ${report.cn || 'N/A'}\n[*] [b]TACTICAL COMMANDER:[/b] ${report.tc || 'N/A'}\n[/list]\n[u]1.3[/u] [b]INVOLVED METROPOLITAN MEMBERS: [/b]\n[list]${members}[/list]\n[u]1.4[/u] [b]DEPLOYMENT TYPE:[/b] ${report.deploymentType}\n[/indent]\n[divbox=black][b][size=150][color=#FFFFFF]2. DEPLOYMENT TIMELINE[/color][/size][/b][/divbox]\n[indent=10][u]2.1[/u] [b]DATE:[/b] ${report.date || 'N/A'}\n[u]2.2[/u] [b]LOCATION:[/b] ${report.location || 'N/A'}\n[u]2.3[/u] [b]TIMELINE:[/b]\n[list][*][b]START OF DEPLOYMENT:[/b] ${report.startTime || 'N/A'}${timelineBlock}\n[*][b]END OF DEPLOYMENT:[/b] ${report.endTime || 'N/A'}[/list][/indent]\n[divbox=black][b][size=150][color=#FFFFFF]3. CASUALTY & INJURY INFORMATION[/color][/size][/b][/divbox]\n[indent=10][u]3.1[/u] [b]INJURED TEAM MEMBERS:[/b]\n[list]${injured}[/list]\n[u]3.2[/u] [b]SUSPECT CASUALTIES:[/b]\n[list]${suspects}[/list]\n[u]3.3[/u] [b]CIVILIAN CASUALTIES:[/b]\n[list]${civilians}[/list]\n[br][/br]\n[divbox=black][/divbox]\n[br][/br]\n[aligntable=left,200,0,0,0,0,0][center][b]FILING OFFICER SIGNATURE[/b]\n[i]${report.signature || ' '}[/i][/center][/aligntable]\n[br][/br][br][/br][/divbox2]`;
+    }
+
+    function buildFlightLogBBCode(report) {
+        const checkedActivityNames = report.activities.map(act => act.name);
+        const allActivitiesBBCode = flightActivities.map(activity => {
+            const isChecked = checkedActivityNames.includes(activity.name);
+            const checkboxCode = isChecked ? '[cbc]' : '[cb]';
+            return `${checkboxCode} [b]${activity.name}[/b]: ${activity.points} points`;
+        }).join('\n');
+        return `[divbox2=white][center][b]FLIGHT LOG ENTRY[/b][/center]\n[hr][/hr]\n\n[list=none][*][b]Date[/b]: ${report.date || 'DD/MMM/YYYY'}\n[*][b]Total Flight Hours (Optional)[/b]: ${report.hours || 'XX'} [/list]\n\n[list=none]\n${allActivitiesBBCode}[/list][/divbox2]`;
     }
 
     // --- REPORTING LOGIC ---
@@ -647,6 +751,7 @@
             date: document.getElementById('depl-date').value,
             location: document.getElementById('depl-location').value,
             startTime: document.getElementById('depl-start-time').value,
+            timelineDetails: document.getElementById('depl-timeline-details').value,
             endTime: document.getElementById('depl-end-time').value,
             injured: getDynamicListValues('depl-injured', true),
             suspects: getDynamicListValues('depl-suspects', true),
@@ -668,6 +773,30 @@
         localStorage.removeItem(deploymentFormKey);
         document.getElementById("deployment-form").reset();
         document.querySelectorAll('#deployment-form .dynamic-list-container').forEach(c => c.innerHTML = '');
+    }
+
+    function generateFlightLogBBCode(button) {
+        const selectedActivities = Array.from(document.querySelectorAll('[name="flight-activity"]:checked'));
+        const flightLogData = {
+            type: 'Flight',
+            date: document.getElementById('flight-date').value,
+            hours: document.getElementById('flight-hours').value || 0,
+            activities: selectedActivities.map(cb => ({ name: cb.value, points: parseInt(cb.dataset.points, 10) })),
+            totalPoints: selectedActivities.reduce((sum, cb) => sum + parseInt(cb.dataset.points, 10), 0),
+            timestamp: new Date().toISOString()
+        };
+        if (!flightLogData.date) {
+            return showSnackbar("Error: Please enter a date for the flight log.");
+        }
+        if (saveReport(flightLogData)) {
+            provideSaveFeedback(button);
+        }
+        const bbcode = buildFlightLogBBCode(flightLogData);
+        const outputContainer = document.getElementById("flight-log-output-container");
+        document.getElementById("flight-log-output").textContent = bbcode;
+        outputContainer.style.display = 'block';
+        outputContainer.scrollIntoView({ behavior: 'smooth' });
+        document.getElementById("flight-log-form").reset();
     }
 
     // --- QUICK PARSER LOGIC ---
@@ -737,7 +866,7 @@
             const monthDate = new Date(monthKey + '-02T00:00:00Z');
             const monthName = monthDate.toLocaleString('default', { month: 'long', timeZone: 'UTC' });
             const year = monthDate.getUTCFullYear();
-            let patrolCount = 0, deploymentCount = 0, totalDeploymentMinutes = 0;
+            let patrolCount = 0, deploymentCount = 0, totalDeploymentMinutes = 0, flightLogCount = 0, totalFlightHours = 0, totalFlightPoints = 0;
             const partnerCounts = {}, deploymentTypeCounts = {};
             const getFullName = (str) => {
                 const parts = (str || "").trim().split(' ');
@@ -763,7 +892,12 @@
                             const end = new Date(`${isoDate}T${report.endTime}:00Z`);
                             if (end > start) totalDeploymentMinutes += (end - start) / (1000 * 60);
                         }
+                    } else if (report.type === 'Flight') {
+                        flightLogCount++;
+                        totalFlightHours += parseFloat(report.hours) || 0;
+                        totalFlightPoints += report.totalPoints || 0;
                     }
+
                     participants.forEach(p => {
                         const originalPartnerFullName = getFullName(p);
                         const partnerFullNameLower = originalPartnerFullName.toLowerCase();
@@ -779,8 +913,26 @@
             const sortedPartners = Object.entries(partnerCounts).sort(([, a], [, b]) => b - a);
             const sortedDeploymentTypes = Object.entries(deploymentTypeCounts).sort(([, a], [, b]) => b - a);
 
-            finalOutputHTML += `<hr><h3>Summary for ${monthName} ${year}</h3>`;
-            finalOutputHTML += `<ul><li><strong>Total Patrols Logged:</strong> ${patrolCount}</li><li><strong>Total Deployments Logged:</strong> ${deploymentCount}</li><li><strong>Total Deployment Duration:</strong> ${(totalDeploymentMinutes / 60).toFixed(1)} hours</li></ul>`;
+            finalOutputHTML += `<h3>Summary for ${monthName} ${year}</h3>`;
+            
+            // Metropolitan Division Summary
+            finalOutputHTML += `<h4>Metropolitan Division Summary</h4>`;
+            finalOutputHTML += `<ul>`;
+            finalOutputHTML += `<li><strong>Total Patrols Logged:</strong> ${patrolCount}</li>`;
+            finalOutputHTML += `<li><strong>Total Deployments Logged:</strong> ${deploymentCount}</li>`;
+            finalOutputHTML += `<li><strong>Total Deployment Duration:</strong> ${(totalDeploymentMinutes / 60).toFixed(1)} hours</li>`;
+            finalOutputHTML += `</ul>`;
+
+            // Flight (ASD) Summary, only if there are flight logs
+            if (flightLogCount > 0) {
+                finalOutputHTML += `<h4>Flight Summary</h4>`;
+                finalOutputHTML += `<ul>`;
+                finalOutputHTML += `<li><strong>Total Flight Logs:</strong> ${flightLogCount}</li>`;
+                finalOutputHTML += `<li><strong>Total Flight Hours:</strong> ${totalFlightHours.toFixed(1)}</li>`;
+                finalOutputHTML += `<li><strong>Total Flight Points:</strong> ${totalFlightPoints}</li>`;
+                finalOutputHTML += `</ul>`;
+            }
+
             if (sortedDeploymentTypes.length > 0) {
                 finalOutputHTML += `<h4>Deployment Types Breakdown:</h4><ol>`;
                 sortedDeploymentTypes.forEach(([type, count]) => finalOutputHTML += `<li>${type} (${count})</li>`);
@@ -795,7 +947,7 @@
                 finalOutputHTML += `<p>No partners recorded this month.</p>`;
             }
         });
-        summaryOutput.innerHTML = finalOutputHTML.length > 5 ? finalOutputHTML.substring(5) : "<h3>No reports to summarize.</h3>";
+        summaryOutput.innerHTML = finalOutputHTML.length > 4 ? finalOutputHTML.substring(4) : "<h3>No reports to summarize.</h3>";
         summaryOutputContainer.style.display = 'block';
         summaryOutputContainer.scrollIntoView({ behavior: 'smooth' });
     }
@@ -815,18 +967,27 @@
             
             const detailsDiv = document.createElement('div');
             detailsDiv.className = 'report-details';
+            let participantsText = 'N/A';
+            if (report.type === 'Patrol') participantsText = (report.officers || []).join(', ');
+            else if (report.type === 'Deployment') participantsText = (report.members || []).join(', ');
+            else if (report.type === 'Flight') participantsText = `Points: ${report.totalPoints}, Hours: ${report.hours}`;
+
             detailsDiv.innerHTML = `<p class="report-meta">${report.type} Report | ${report.date || 'No Date'}</p>
-                                  <p><strong>Participants:</strong> ${(report.officers || report.members || []).join(', ')}</p>`;
+                                    <p><strong>Details:</strong> ${participantsText}</p>`;
             
             const actionsDiv = document.createElement('div');
             actionsDiv.className = 'report-actions';
 
-            if (report.deploymentType || report.patrolTypes) {
+            // Only show copy button if there's a BBCode to generate
+            if (report.type === 'Patrol' || report.type === 'Deployment' || report.type === 'Flight') {
                 const copyBtn = document.createElement('button');
                 copyBtn.className = 'copy-btn';
                 copyBtn.textContent = 'Copy BBCode';
                 copyBtn.onclick = (e) => {
-                    let bbcode = report.type === 'Patrol' ? buildPatrolBBCode(report) : buildDeploymentBBCode(report);
+                    let bbcode = '';
+                    if (report.type === 'Patrol') bbcode = buildPatrolBBCode(report);
+                    else if (report.type === 'Deployment') bbcode = buildDeploymentBBCode(report);
+                    else if (report.type === 'Flight') bbcode = buildFlightLogBBCode(report);
                     copyToClipboard(bbcode, e.target);
                 };
                 actionsDiv.appendChild(copyBtn);
