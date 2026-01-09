@@ -312,8 +312,6 @@
         </div>
         <label for="patrol-deployments">Deployments During Patrol</label>
         <textarea id="patrol-deployments" rows="3" placeholder="One per line: URL|Deployment type"></textarea>
-        <label for="patrol-fieldActivity">Field Activity During Patrol</label>
-        <textarea id="patrol-fieldActivity" rows="3" placeholder="One per line: URL|Activity type"></textarea>
         <label for="patrol-additional">Additional Information / Narrative</label>
         <textarea id="patrol-additional" rows="5"></textarea>
         <button onclick="generatePatrolBBCode(this)">Generate & Save Report</button>
@@ -457,6 +455,7 @@
     const reportStorageKey = 'lspdReports';
     const patrolFormKey = 'patrolFormData';
     const deploymentFormKey = 'deploymentFormData';
+    const flightLogFormKey = 'flightLogFormData'; // Added for flight log persistence
     const summaryExclusionKey = 'summaryExclusion';
 
     const deploymentTypes = [
@@ -538,7 +537,7 @@
     function saveFormData(formId, storageKey) {
         const form = document.getElementById(formId);
         const data = {};
-        form.querySelectorAll('input[type="text"], textarea, select').forEach(el => { data[el.id] = el.value; });
+        form.querySelectorAll('input[type="text"], textarea, select, input[type="number"]').forEach(el => { data[el.id] = el.value; });
         form.querySelectorAll('input[type="checkbox"]').forEach(el => {
             if (!data[el.name]) data[el.name] = {};
             data[el.name][el.value] = el.checked;
@@ -552,7 +551,7 @@
         if (!savedData) return;
         const form = document.getElementById(formId);
         const data = JSON.parse(savedData);
-        form.querySelectorAll('input[type="text"], textarea, select').forEach(el => { if (data[el.id]) el.value = data[el.id]; });
+        form.querySelectorAll('input[type="text"], textarea, select, input[type="number"]').forEach(el => { if (data[el.id]) el.value = data[el.id]; });
         form.querySelectorAll('input[type="checkbox"]').forEach(el => { if (data[el.name] && data[el.name][el.value]) el.checked = true; });
         form.querySelectorAll('.dynamic-list-container').forEach(container => {
             container.innerHTML = '';
@@ -575,6 +574,7 @@
         const form = document.getElementById(elementId).closest('.form-section');
         if (form.id === 'patrol-form') saveFormData('patrol-form', patrolFormKey);
         else if (form.id === 'deployment-form') saveFormData('deployment-form', deploymentFormKey);
+        else if (form.id === 'flight-log-form') saveFormData('flight-log-form', flightLogFormKey);
     }
 
     function getUTCTime(offsetHours = 0) {
@@ -660,10 +660,14 @@
         showMenu();
         loadFormData('patrol-form', patrolFormKey);
         loadFormData('deployment-form', deploymentFormKey);
+        loadFormData('flight-log-form', flightLogFormKey); // Load flight log data
         const savedExclusion = localStorage.getItem(summaryExclusionKey);
         if (savedExclusion) document.getElementById('summary-name-exclusion').value = savedExclusion;
+        
+        // Input listeners for saving
         document.getElementById('patrol-form').addEventListener('input', () => saveFormData('patrol-form', patrolFormKey));
         document.getElementById('deployment-form').addEventListener('input', () => saveFormData('deployment-form', deploymentFormKey));
+        document.getElementById('flight-log-form').addEventListener('input', () => saveFormData('flight-log-form', flightLogFormKey));
     });
 
     // --- BBCODE BUILDERS ---
@@ -674,9 +678,8 @@
             return `${isChecked ? '[cbc]' : '[cb]'} ${pt}`;
         }).join('\n');
         const deploymentsRaw = (report.deploymentsRaw || "").split("\n");
-        const fieldActivityRaw = (report.fieldActivityRaw || "").split("\n");
         const deploymentBB = deploymentsRaw.map(line => { const [url, label] = line.split("|"); return url && label ? `[url=${url.trim()}]${label.trim()}[/url]` : ''; }).filter(Boolean).join("\n") || "N/A";
-        const fieldActivityBB = fieldActivityRaw.map(line => { const [url, label] = line.split("|"); return url && label ? `[url=${url.trim()}]${label.trim()}[/url]` : ''; }).filter(Boolean).join("\n") || "N/A";
+        // removed Field Activity section
         return `[divbox2=transparent][font=Arial][center]LOS SANTOS POLICE DEPARTMENT\n[size=120][b]METROPOLITAN DIVISION\nPATROL REPORT[/b][/size][/center]\n[b]1. Date of Patrol[/b] \n${report.date || 'N/A'}\n\n[b]2. Officers[/b]\n${officers}\n\n[b]3. Patrol Type[/b]\n${patrolTypes}\n\n[b]4. Deployments[/b]\n${deploymentBB}\n\n[b]5. Additional Information[/b]\n${report.additional || 'N/A'}[/font][/divbox2]`;
     }
 
@@ -719,7 +722,7 @@
             officers: getDynamicListValues('patrol-officer-list', true),
             patrolTypes: Array.from(document.querySelectorAll('[name="patrol-type"]:checked')).map(cb => cb.value),
             deploymentsRaw: document.getElementById("patrol-deployments").value,
-            fieldActivityRaw: document.getElementById("patrol-fieldActivity").value,
+            // fieldActivityRaw removed
             additional: document.getElementById("patrol-additional").value,
             timestamp: new Date().toISOString()
         };
@@ -796,6 +799,7 @@
         document.getElementById("flight-log-output").textContent = bbcode;
         outputContainer.style.display = 'block';
         outputContainer.scrollIntoView({ behavior: 'smooth' });
+        localStorage.removeItem(flightLogFormKey); // Remove persistent form data
         document.getElementById("flight-log-form").reset();
     }
 
